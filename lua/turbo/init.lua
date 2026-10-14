@@ -13,13 +13,15 @@ local M = {}
 M.orig_settings = {}
 M.enabled = false
 
+local target_tabline = "%!v:lua.require('turbo.ui.menubar').render()"
+
 function M.setup(opts)
   opts = opts or {}
   M.opts = vim.tbl_deep_extend("force", {
     theme = "gruvbox",            -- "gruvbox" | "borland" | "monokai" | "mocha"
-    enable_tabline = true,        -- Top nostalgic menubar
+    enable_tabline = true,        -- Top nostalgic menubar (Row 0)
+    enable_winbar = true,         -- Buffer tabs below menubar (Row 1)
     enable_statusline = true,     -- Bottom Borland statusline
-    enable_winbar = true,         -- Double-line ASCII window headers
     enable_keymaps = true,        -- Alt+<Key> accelerators and F1-F10 keys
     enable_lazy_keys = false,     -- Off by default for existing setups so it won't conflict with host leader keys
     enable_mouse = nil,           -- nil means preserve user's existing vim.opt.mouse
@@ -92,21 +94,69 @@ function M.enable()
 
   local opts = M.opts or {}
 
-  -- Top Menubar
+  -- Top Menubar (Row 0)
   if opts.enable_tabline ~= false then
     vim.o.showtabline = 2
-    vim.o.tabline = "%!v:lua.require('turbo.ui.menubar').render()"
+    vim.o.tabline = target_tabline
+
+    -- Guard tabline so plugins loading on VeryLazy (e.g. bufferline) do not stomp over Row 0
+    local group = vim.api.nvim_create_augroup("TurboTablineGuard", { clear = true })
+    vim.api.nvim_create_autocmd({ "VimEnter", "UIEnter", "BufEnter", "TabEnter" }, {
+      group = group,
+      callback = function()
+        if M.enabled and (M.opts.enable_tabline ~= false) then
+          if vim.o.tabline ~= target_tabline then
+            vim.o.showtabline = 2
+            vim.o.tabline = target_tabline
+          end
+        end
+      end,
+    })
+
+    vim.api.nvim_create_autocmd("User", {
+      pattern = "VeryLazy",
+      group = group,
+      callback = function()
+        if M.enabled and (M.opts.enable_tabline ~= false) then
+          vim.schedule(function()
+            if M.enabled and (M.opts.enable_tabline ~= false) then
+              vim.o.showtabline = 2
+              vim.o.tabline = target_tabline
+              vim.cmd("redrawtabline")
+            end
+          end)
+        end
+      end,
+    })
+
+    vim.api.nvim_create_autocmd("OptionSet", {
+      pattern = "tabline",
+      group = group,
+      callback = function()
+        if M.enabled and (M.opts.enable_tabline ~= false) then
+          if vim.v.option_new ~= target_tabline then
+            vim.schedule(function()
+              if M.enabled and (M.opts.enable_tabline ~= false) then
+                vim.o.showtabline = 2
+                vim.o.tabline = target_tabline
+                vim.cmd("redrawtabline")
+              end
+            end)
+          end
+        end
+      end,
+    })
+  end
+
+  -- Row 1: Buffer tabs / frame below the menubar
+  if opts.enable_winbar ~= false then
+    vim.o.winbar = "%!v:lua.require('turbo.layout').render_winbar()"
   end
 
   -- Bottom Statusline
   if opts.enable_statusline ~= false then
     vim.o.laststatus = 3
     vim.o.statusline = "%!v:lua.require('turbo.ui.statusline').render()"
-  end
-
-  -- Window headers (winbar)
-  if opts.enable_winbar ~= false then
-    vim.o.winbar = "%!v:lua.require('turbo.layout').render_winbar()"
   end
 
   if opts.enable_mouse ~= nil then
@@ -163,6 +213,9 @@ end
 
 function M.disable()
   if not M.enabled then return end
+
+  -- Clear tabline guard augroup
+  pcall(vim.api.nvim_del_augroup_by_name, "TurboTablineGuard")
 
   -- Close any open menu
   dropdown.close()

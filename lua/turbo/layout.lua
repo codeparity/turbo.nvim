@@ -3,23 +3,50 @@ local theme = require("turbo.theme")
 
 local M = {}
 
--- Render the classic Borland window header
+-- Render the classic Borland window header or open buffer tabs below the menubar
 function M.render_winbar()
+  -- If bufferline is loaded and active, render bufferline tabs right below menubar!
+  if package.loaded["bufferline"] and _G.nvim_bufferline then
+    local ok, res = pcall(_G.nvim_bufferline)
+    if ok and res and #res > 0 then
+      return res
+    end
+  end
+
+  local bufs = vim.fn.getbufinfo({ buflisted = 1 })
   local winid = vim.api.nvim_get_current_win()
-  local bufnr = vim.api.nvim_win_get_buf(winid)
-  local name = vim.api.nvim_buf_get_name(bufnr)
+  local cur_buf = vim.api.nvim_win_get_buf(winid)
+
+  -- When multiple buffers exist, render clickable retro tabs in the winbar
+  if #bufs > 1 then
+    local s = "%#TurboFrame#╔═%@v:lua.TurboWinCloseClick@%#TurboFrameBtn#[■]%X%#TurboFrame#═ "
+    for _, b in ipairs(bufs) do
+      local bname = vim.fn.fnamemodify(b.name, ":t")
+      if #bname == 0 then bname = "NONAME00.CPP" end
+      local mod = vim.bo[b.bufnr].modified and "*" or ""
+      if b.bufnr == cur_buf then
+        s = s .. "%#TurboMenuSelect# " .. b.bufnr .. " " .. bname .. mod .. " %#TurboFrame# "
+      else
+        s = s .. "%" .. b.bufnr .. "@v:lua.TurboSwitchBufClick@%#TurboFrameTitle#" .. b.bufnr .. " " .. bname .. mod .. "%X %#TurboFrame# "
+      end
+    end
+    s = s .. "%#TurboFrame#%=" .. "%@v:lua.TurboWinZoomClick@%#TurboFrameBtn#[↑]%X%#TurboFrame#═╗"
+    return s
+  end
+
+  -- Single window default Borland double box frame
+  local name = vim.api.nvim_buf_get_name(cur_buf)
   local display_name = "NONAME00.CPP"
   if name and #name > 0 then
     display_name = vim.fn.fnamemodify(name, ":t")
   end
 
-  local modified = vim.bo[bufnr].modified and "*" or ""
+  local modified = vim.bo[cur_buf].modified and "*" or ""
   local winnr = vim.api.nvim_win_get_number(winid)
-
   local title_str = string.format(" %d %s%s ", winnr, display_name, modified)
 
   local width = vim.api.nvim_win_get_width(winid)
-  local fixed_chars = 14 + #title_str -- ╔═[■]════ + title + ════[↑]═╗
+  local fixed_chars = 14 + #title_str
   local fill_len = math.max(2, math.floor((width - fixed_chars) / 2))
   local left_fill = string.rep("═", fill_len)
   local right_fill = string.rep("═", math.max(2, width - fixed_chars - fill_len))
@@ -42,6 +69,12 @@ end
 
 _G.TurboWinZoomClick = function()
   M.toggle_zoom()
+end
+
+_G.TurboSwitchBufClick = function(bufnr)
+  if bufnr and bufnr > 0 and vim.api.nvim_buf_is_valid(bufnr) then
+    vim.api.nvim_set_current_buf(bufnr)
+  end
 end
 
 function M.toggle_zoom()
