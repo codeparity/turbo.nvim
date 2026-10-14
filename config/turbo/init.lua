@@ -50,7 +50,7 @@ vim.api.nvim_create_autocmd("VimEnter", {
     if vim.fn.argc() == 0 and vim.fn.line2byte(vim.fn.line("$") + 1) <= 2 then
       local sample = {
         "/*",
-        " *  TURBO C++ 3.0 NOSTALGIA UI",
+        " *  TURBO NOSTALGIA UI",
         " *  File: NONAME00.CPP",
         " *",
         " *  Nostalgic TUI Features:",
@@ -68,13 +68,13 @@ vim.api.nvim_create_autocmd("VimEnter", {
         " *",
         " *  Plugin Controls:",
         " *    :TurboToggle  - Turn Nostalgia UI on/off",
-        " *    :TurboTheme   - Switch between Gruvbox, Borland DOS Blue, Monokai, Mocha",
+        " *    :TurboTheme   - Switch between Gruvbox, Classic DOS Blue, Monokai, Mocha",
         " */",
         "",
         "#include <stdio.h>",
         "",
         "int main(void) {",
-        '    printf("Welcome to Turbo C++ Nostalgia UI for Neovim!\\n");',
+        '    printf("Welcome to Turbo Nostalgia UI for Neovim!\\n");',
         "    return 0;",
         "}",
       }

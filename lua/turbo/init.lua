@@ -83,7 +83,7 @@ function M.setup(opts)
 
   vim.api.nvim_create_user_command("TurboAbout", function()
     layout.show_about_dialog()
-  end, { desc = "Show Turbo C++ About Dialog" })
+  end, { desc = "Show Turbo About Dialog" })
 
   vim.api.nvim_create_user_command("TurboCompile", function()
     compiler.compile_file()

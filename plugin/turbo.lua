@@ -29,4 +29,4 @@ end, {
 
 vim.api.nvim_create_user_command("TurboAbout", function()
   require("turbo.layout").show_about_dialog()
-end, { desc = "Show Turbo C++ About Dialog" })
+end, { desc = "Show Turbo About Dialog" })

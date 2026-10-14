@@ -74,7 +74,7 @@ function M.setup()
     defaults = { lazy = false },
     ui = {
       border = "double",
-      title = " Turbo C++ Package Manager (Lazy) ",
+      title = " Package Manager (Lazy) ",
     },
     performance = {
       rtp = {

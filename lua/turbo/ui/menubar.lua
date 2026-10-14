@@ -51,12 +51,6 @@ function M.render()
   -- Fill the rest of the tabline with menubar background
   s = s .. "%#TurboMenuBar#%="
 
-  -- Only show right brand label if screen is wide enough to avoid truncating menus
-  local cols = vim.o.columns or 80
-  if cols >= 100 then
-    s = s .. "Turbo C++ 3.0 "
-  end
-
   return s
 end
 

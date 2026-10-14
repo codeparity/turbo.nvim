@@ -230,7 +230,7 @@ M.items = {
         end)
       end },
       { separator = true },
-      { label = "About Turbo IDE...", mnemonic = "A", desc = "Display Borland / Turbo C++ 3.0 credits & version", action = function()
+      { label = "About...", mnemonic = "A", desc = "About Turbo Nostalgia UI", action = function()
         layout.show_about_dialog()
       end },
     },

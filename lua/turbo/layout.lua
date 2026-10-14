@@ -161,13 +161,12 @@ function M.show_about_dialog()
 
   local lines = {
     "",
-    "           BORLAND C++ & TURBO C++ 3.0",
-    "             Copyright (c) 1990, 1992",
-    "               Borland International",
+    "                  TURBO.NVIM",
+    "            Nostalgia UI for Neovim",
     "",
-    "         Enhanced Modern Neovim TUI Edition",
     "         Press Alt+F to open File menu",
     "         Press F3 to open File Browser (Neo-tree)",
+    "         Press F10 to activate Menubar",
     "",
     "          [ Press Enter or Esc to Dismiss ]",
     "",
@@ -183,7 +182,7 @@ function M.show_about_dialog()
     height = height,
     style = "minimal",
     border = "double",
-    title = " About Turbo C++ ",
+    title = " About Turbo ",
     title_pos = "center",
     zindex = 60,
   })
@@ -207,7 +206,7 @@ function M.open_theme_selector()
   local themes_list = {
     { id = "auto", name = "Auto (Respect Current Colorscheme)" },
     { id = "gruvbox", name = "Gruvbox Dark" },
-    { id = "borland", name = "Borland Turbo C++ (Classic DOS Blue)" },
+    { id = "borland", name = "Classic DOS Blue" },
     { id = "monokai", name = "Monokai Pro" },
     { id = "mocha", name = "Catppuccin Mocha" },
   }
