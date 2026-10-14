@@ -11,7 +11,7 @@ M.items = {
     keymap = "<A-f>",
     entries = {
       { label = "New", mnemonic = "N", desc = "Create a new file in an edit window", action = function() vim.cmd("enew") end },
-      { label = "Open...", mnemonic = "O", shortcut = "F3", desc = "Open an existing file", action = function() layout.open_file_dialog() end },
+      { label = "Open...", mnemonic = "O", shortcut = "F3", desc = "Open file browser / explorer (Neo-tree / NERDTree)", action = function() layout.open_file_browser() end },
       { label = "Save", mnemonic = "S", shortcut = "F2", desc = "Save the current file", action = function() vim.cmd("write") end },
       { label = "Save as...", mnemonic = "A", desc = "Save the file under a new name", action = function() vim.ui.input({ prompt = "Save as: " }, function(input) if input and #input > 0 then vim.cmd("write " .. vim.fn.fnameescape(input)) end end) end },
       { label = "Save all", mnemonic = "L", desc = "Save all modified files", action = function() vim.cmd("wall") end },

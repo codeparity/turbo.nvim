@@ -46,7 +46,7 @@ function M.setup()
   map("n", "<leader>fn", "<cmd>enew<cr>", "New File")
   map("n", "<leader>fs", "<cmd>write<cr>", "Save File")
   map("n", "<leader>w", "<cmd>write<cr>", "Save File")
-  map("n", "<leader>ff", function() layout.open_file_dialog() end, "Find Files (F3)")
+  map("n", "<leader>ff", function() layout.open_file_browser() end, "Find Files / File Browser (F3)")
   map("n", "<leader>fg", function()
     vim.ui.input({ prompt = "Grep: " }, function(input)
       if input and #input > 0 then

@@ -5,6 +5,25 @@ local M = {}
 
 -- Render the classic Borland window header or open buffer tabs below the menubar
 function M.render_winbar()
+  local winid = vim.g.statusline_winid or vim.api.nvim_get_current_win()
+  if not winid or not vim.api.nvim_win_is_valid(winid) then
+    return ""
+  end
+
+  -- Skip float windows (like dropdown menus, popups, dashboards)
+  local cfg = vim.api.nvim_win_get_config(winid)
+  if cfg.relative and cfg.relative ~= "" then
+    return ""
+  end
+
+  local bufnr = vim.api.nvim_win_get_buf(winid)
+  local ft = vim.bo[bufnr].filetype
+
+  -- Special windows that shouldn't show a winbar header
+  if ft == "snacks_dashboard" or ft == "lazy" or ft == "mason" or ft == "help" or ft == "neo-tree" or ft == "nerdtree" then
+    return ""
+  end
+
   -- If bufferline is loaded and active, render bufferline tabs right below menubar!
   if package.loaded["bufferline"] and _G.nvim_bufferline then
     local ok, res = pcall(_G.nvim_bufferline)
@@ -14,8 +33,6 @@ function M.render_winbar()
   end
 
   local bufs = vim.fn.getbufinfo({ buflisted = 1 })
-  local winid = vim.api.nvim_get_current_win()
-  local cur_buf = vim.api.nvim_win_get_buf(winid)
 
   -- When multiple buffers exist, render clickable retro tabs in the winbar
   if #bufs > 1 then
@@ -24,7 +41,7 @@ function M.render_winbar()
       local bname = vim.fn.fnamemodify(b.name, ":t")
       if #bname == 0 then bname = "NONAME00.CPP" end
       local mod = vim.bo[b.bufnr].modified and "*" or ""
-      if b.bufnr == cur_buf then
+      if b.bufnr == bufnr then
         s = s .. "%#TurboMenuSelect# " .. b.bufnr .. " " .. bname .. mod .. " %#TurboFrame# "
       else
         s = s .. "%" .. b.bufnr .. "@v:lua.TurboSwitchBufClick@%#TurboFrameTitle#" .. b.bufnr .. " " .. bname .. mod .. "%X %#TurboFrame# "
@@ -34,14 +51,14 @@ function M.render_winbar()
     return s
   end
 
-  -- Single window default Borland double box frame
-  local name = vim.api.nvim_buf_get_name(cur_buf)
+  -- Single window default Borland double box frame (stable: uses exact window buffer)
+  local name = vim.api.nvim_buf_get_name(bufnr)
   local display_name = "NONAME00.CPP"
   if name and #name > 0 then
     display_name = vim.fn.fnamemodify(name, ":t")
   end
 
-  local modified = vim.bo[cur_buf].modified and "*" or ""
+  local modified = vim.bo[bufnr].modified and "*" or ""
   local winnr = vim.api.nvim_win_get_number(winid)
   local title_str = string.format(" %d %s%s ", winnr, display_name, modified)
 
@@ -77,6 +94,48 @@ _G.TurboSwitchBufClick = function(bufnr)
   end
 end
 
+-- Open File Browser / Explorer (Neo-tree, NERDTree, Snacks Picker, or Telescope)
+function M.open_file_browser()
+  -- 1. Try Neo-tree (the modern Neovim equivalent of NERDTree)
+  if vim.fn.exists(":Neotree") == 2 then
+    vim.cmd("Neotree reveal")
+    return
+  end
+
+  -- 2. Try classic NERDTree if installed
+  if vim.fn.exists(":NERDTreeToggle") == 2 or vim.fn.exists(":NERDTree") == 2 then
+    vim.cmd("NERDTreeToggle")
+    return
+  end
+
+  -- 3. Try Snacks explorer or picker
+  local ok_snacks, snacks = pcall(require, "snacks")
+  if ok_snacks then
+    if snacks.explorer then
+      snacks.explorer()
+      return
+    elseif snacks.picker and snacks.picker.files then
+      snacks.picker.files()
+      return
+    end
+  end
+
+  -- 4. Try Telescope
+  local ok_tele, builtin = pcall(require, "telescope.builtin")
+  if ok_tele and builtin.find_files then
+    builtin.find_files()
+    return
+  end
+
+  -- 5. Native directory browser fallback
+  vim.cmd("edit .")
+end
+
+-- Directory Tree toggle (Project menu)
+function M.open_dir_explorer()
+  M.open_file_browser()
+end
+
 function M.toggle_zoom()
   if state.is_zoomed then
     vim.cmd("wincmd =")
@@ -107,8 +166,8 @@ function M.show_about_dialog()
     "               Borland International",
     "",
     "         Enhanced Modern Neovim TUI Edition",
-    "         Default Theme: Gruvbox Dark",
     "         Press Alt+F to open File menu",
+    "         Press F3 to open File Browser (Neo-tree)",
     "",
     "          [ Press Enter or Esc to Dismiss ]",
     "",
@@ -146,13 +205,14 @@ end
 
 function M.open_theme_selector()
   local themes_list = {
-    { id = "gruvbox", name = "Gruvbox Dark (Default)" },
+    { id = "auto", name = "Auto (Respect Current Colorscheme)" },
+    { id = "gruvbox", name = "Gruvbox Dark" },
     { id = "borland", name = "Borland Turbo C++ (Classic DOS Blue)" },
     { id = "monokai", name = "Monokai Pro" },
     { id = "mocha", name = "Catppuccin Mocha" },
   }
 
-  local width = 46
+  local width = 50
   local height = #themes_list + 4
   local row = math.floor((vim.o.lines - height) / 2)
   local col = math.floor((vim.o.columns - width) / 2)
@@ -163,7 +223,7 @@ function M.open_theme_selector()
 
   local lines = { " Select Color Theme:" }
   for _, t in ipairs(themes_list) do
-    local mark = (t.id == state.active_theme) and " [●] " or " [ ] "
+    local mark = (t.id == state.active_theme or (t.id == "auto" and not state.active_theme)) and " [●] " or " [ ] "
     table.insert(lines, mark .. t.name)
   end
   table.insert(lines, string.rep("─", width))
@@ -226,25 +286,18 @@ function M.open_theme_selector()
   vim.keymap.set("n", "<CR>", function()
     local chosen = themes_list[sel_idx]
     if chosen then
-      theme.set_theme(chosen.id)
-      vim.notify("Applied theme: " .. chosen.name, vim.log.levels.INFO)
+      if chosen.id == "auto" then
+        theme.adapt_user_colorscheme()
+        vim.notify("Turbo UI adapted to active colorscheme", vim.log.levels.INFO)
+      else
+        theme.set_theme(chosen.id)
+        vim.notify("Applied theme: " .. chosen.name, vim.log.levels.INFO)
+      end
     end
     close()
   end, opts)
   vim.keymap.set("n", "<Esc>", close, opts)
   vim.keymap.set("n", "q", close, opts)
-end
-
-function M.open_file_dialog()
-  vim.ui.input({ prompt = "Open File (F3): ", completion = "file" }, function(file)
-    if file and #file > 0 then
-      vim.cmd("edit " .. vim.fn.fnameescape(file))
-    end
-  end)
-end
-
-function M.open_dir_explorer()
-  vim.cmd("edit .")
 end
 
 return M

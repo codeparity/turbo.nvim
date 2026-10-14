@@ -65,7 +65,7 @@ local function update_selection_highlight(entries, content_width)
         end
       end
 
-      -- Shortcut highlight
+      -- Shortcut highlight on unselected line
       if entry.shortcut then
         local line_text = vim.api.nvim_buf_get_lines(state.menu_buf, line_idx, line_idx + 1, false)[1] or ""
         local s_idx = line_text:find(entry.shortcut, 1, true)
@@ -80,8 +80,15 @@ local function update_selection_highlight(entries, content_width)
     end
   end
 
-  -- Update statusline with description of selected item
-  vim.cmd("redrawstatus")
+  -- Move cursor to selected row inside menu window
+  if state.menu_win and vim.api.nvim_win_is_valid(state.menu_win) then
+    pcall(vim.api.nvim_win_set_cursor, state.menu_win, { selected_row, 1 })
+  end
+
+  -- Only redraw statusline if turbo statusline is actually active (prevents lualine redrawing/flickering)
+  if vim.o.statusline and vim.o.statusline:find("turbo.ui.statusline") then
+    vim.cmd("redrawstatus")
+  end
 end
 
 function M.get_selected_desc()
@@ -116,7 +123,9 @@ function M.close()
   end
 
   vim.cmd("redrawtabline")
-  vim.cmd("redrawstatus")
+  if vim.o.statusline and vim.o.statusline:find("turbo.ui.statusline") then
+    vim.cmd("redrawstatus")
+  end
 end
 
 function M.open(menu_idx)

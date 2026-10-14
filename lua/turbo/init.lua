@@ -216,7 +216,7 @@ function M.enable()
     -- Classic Function Keys
     map({ "n", "v" }, "<F1>", function() vim.cmd("help") end, "Turbo Help")
     map({ "n", "v" }, "<F2>", function() vim.cmd("write") end, "Turbo Save File")
-    map({ "n", "v" }, "<F3>", function() layout.open_file_dialog() end, "Turbo Open File")
+    map({ "n", "v" }, "<F3>", function() layout.open_file_browser() end, "Turbo Open File Browser")
     map({ "n", "v" }, "<A-F3>", function() vim.cmd("close") end, "Turbo Close Window")
     map({ "n", "v" }, "<M-F3>", function() vim.cmd("close") end, "Turbo Close Window")
     map({ "n", "v" }, "<F5>", function() layout.toggle_zoom() end, "Turbo Zoom Window")
