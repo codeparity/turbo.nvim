@@ -1,4 +1,5 @@
 local state = require("turbo.state")
+local lsp = require("turbo.lsp")
 
 local M = {}
 
@@ -12,10 +13,10 @@ local function ensure_message_buf()
     -- Jump to file and line on Enter
     vim.keymap.set("n", "<CR>", function()
       local line = vim.api.nvim_get_current_line()
-      -- Try matching: Error file line: col or file:line:col
+      -- Try matching file:line:col or Severity file line:
       local file, lnum = line:match("([^:%s]+):(%d+)")
       if not file then
-        file, lnum = line:match("([%w%._%-]+)%s+(%d+):")
+        file, lnum = line:match("%w+%s+([%w%._%-%/]+)%s+(%d+):")
       end
       if file and lnum then
         vim.cmd("wincmd p")
@@ -61,28 +62,70 @@ function M.set_message_lines(lines)
   end
 end
 
-function M.compile_file()
+-- Collect diagnostics from any LSP active on current buffer or workspace
+function M.collect_diagnostics(all_buffers)
+  local diags = all_buffers and vim.diagnostic.get() or vim.diagnostic.get(0)
   local file = vim.fn.expand("%:t")
-  if not file or #file == 0 then
-    file = "NONAME00.CPP"
-  end
+  if not file or #file == 0 then file = "NONAME00.CPP" end
+
+  local clients = lsp.get_client_names(0)
+  local client_str = #clients > 0 and (" [" .. table.concat(clients, ", ") .. "]") or " [No LSP]"
 
   local lines = {
-    string.format("Compiling: %s", file),
+    string.format("Diagnostics for %s%s:", all_buffers and "Workspace" or file, client_str),
   }
 
-  -- Check LSP diagnostics
+  if #diags == 0 then
+    table.insert(lines, "Success: 0 Errors, 0 Warnings, 0 Hints")
+  else
+    local errors, warnings, infos = 0, 0, 0
+    for _, d in ipairs(diags) do
+      local severity = "Info"
+      if d.severity == vim.diagnostic.severity.ERROR then
+        severity = "Error"
+        errors = errors + 1
+      elseif d.severity == vim.diagnostic.severity.WARN then
+        severity = "Warning"
+        warnings = warnings + 1
+      else
+        infos = infos + 1
+      end
+      local src_file = file
+      if d.bufnr and vim.api.nvim_buf_is_valid(d.bufnr) then
+        local bname = vim.api.nvim_buf_get_name(d.bufnr)
+        if bname and #bname > 0 then
+          src_file = vim.fn.fnamemodify(bname, ":t")
+        end
+      end
+      table.insert(lines, string.format("%s %s %d: %s", severity, src_file, d.lnum + 1, d.message:gsub("\n", " ")))
+    end
+    table.insert(lines, string.format("Total: %d Errors, %d Warnings, %d Info/Hints", errors, warnings, infos))
+  end
+
+  M.set_message_lines(lines)
+end
+
+function M.compile_file()
+  local file = vim.fn.expand("%:t")
+  if not file or #file == 0 then file = "NONAME00.CPP" end
+
+  local clients = lsp.get_client_names(0)
+  local client_str = #clients > 0 and (" [" .. table.concat(clients, ", ") .. "]") or ""
+
+  local lines = {
+    string.format("Compiling: %s%s", file, client_str),
+  }
+
   local diags = vim.diagnostic.get(0)
   if #diags == 0 then
     table.insert(lines, "Success: 0 Errors, 0 Warnings")
     table.insert(lines, "Code: 0 bytes, Data: 0 bytes")
   else
-    local errors = 0
-    local warnings = 0
+    local errors, warnings = 0, 0
     for _, d in ipairs(diags) do
       local severity = (d.severity == vim.diagnostic.severity.ERROR) and "Error" or "Warning"
       if d.severity == vim.diagnostic.severity.ERROR then errors = errors + 1 else warnings = warnings + 1 end
-      table.insert(lines, string.format("%s %s %d: %s", severity, file, d.lnum + 1, d.message))
+      table.insert(lines, string.format("%s %s %d: %s", severity, file, d.lnum + 1, d.message:gsub("\n", " ")))
     end
     table.insert(lines, string.format("Completed with %d Errors, %d Warnings", errors, warnings))
   end

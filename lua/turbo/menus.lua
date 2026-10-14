@@ -1,3 +1,7 @@
+local lsp = require("turbo.lsp")
+local compiler = require("turbo.compiler")
+local layout = require("turbo.layout")
+
 local M = {}
 
 M.items = {
@@ -7,7 +11,7 @@ M.items = {
     keymap = "<A-f>",
     entries = {
       { label = "New", mnemonic = "N", desc = "Create a new file in an edit window", action = function() vim.cmd("enew") end },
-      { label = "Open...", mnemonic = "O", shortcut = "F3", desc = "Open an existing file", action = function() require("turbo.layout").open_file_dialog() end },
+      { label = "Open...", mnemonic = "O", shortcut = "F3", desc = "Open an existing file", action = function() layout.open_file_dialog() end },
       { label = "Save", mnemonic = "S", shortcut = "F2", desc = "Save the current file", action = function() vim.cmd("write") end },
       { label = "Save as...", mnemonic = "A", desc = "Save the file under a new name", action = function() vim.ui.input({ prompt = "Save as: " }, function(input) if input and #input > 0 then vim.cmd("write " .. vim.fn.fnameescape(input)) end end) end },
       { label = "Save all", mnemonic = "L", desc = "Save all modified files", action = function() vim.cmd("wall") end },
@@ -29,6 +33,10 @@ M.items = {
       { label = "Copy", mnemonic = "C", shortcut = "Ctrl-Ins", desc = "Copy selection to clipboard", action = function() vim.cmd('normal! "+y') end },
       { label = "Paste", mnemonic = "P", shortcut = "Shift-Ins", desc = "Paste from clipboard", action = function() vim.cmd('normal! "+p') end },
       { label = "Clear", mnemonic = "e", desc = "Delete selected text without copying", action = function() vim.cmd('normal! "_d') end },
+      { separator = true },
+      { label = "Format Document", mnemonic = "F", desc = "Format current buffer via active LSP", action = function() lsp.format() end },
+      { label = "Rename Symbol...", mnemonic = "m", shortcut = "F2", desc = "Rename symbol under cursor via LSP", action = function() lsp.rename() end },
+      { label = "Code Action...", mnemonic = "A", desc = "Show code actions for cursor via LSP", action = function() lsp.code_action() end },
     },
   },
   {
@@ -59,12 +67,11 @@ M.items = {
         end)
       end },
       { separator = true },
-      { label = "Go to Definition", mnemonic = "D", shortcut = "gd", desc = "Jump to symbol definition (LSP)", action = function()
-        vim.lsp.buf.definition()
-      end },
-      { label = "Find Symbols...", mnemonic = "S", desc = "Find symbols in current document", action = function()
-        vim.lsp.buf.document_symbol()
-      end },
+      { label = "Go to Definition", mnemonic = "D", shortcut = "gd", desc = "Jump to symbol definition (LSP)", action = function() lsp.definition() end },
+      { label = "Go to Declaration", mnemonic = "c", shortcut = "gD", desc = "Jump to symbol declaration (LSP)", action = function() lsp.declaration() end },
+      { label = "Find References", mnemonic = "e", shortcut = "gr", desc = "Find all symbol references (LSP)", action = function() lsp.references() end },
+      { label = "Document Symbols", mnemonic = "S", desc = "Find outline symbols in current document (LSP)", action = function() lsp.document_symbols() end },
+      { label = "Workspace Symbols", mnemonic = "W", desc = "Search symbols across entire workspace (LSP)", action = function() lsp.workspace_symbols() end },
     },
   },
   {
@@ -73,7 +80,7 @@ M.items = {
     keymap = "<A-r>",
     entries = {
       { label = "Run", mnemonic = "R", shortcut = "Ctrl-F9", desc = "Build and run the current program", action = function()
-        require("turbo.compiler").run_current()
+        compiler.run_current()
       end },
       { label = "Program reset", mnemonic = "P", desc = "Reset running process / debugger", action = function()
         vim.notify("Program state reset", vim.log.levels.INFO)
@@ -88,18 +95,31 @@ M.items = {
     mnemonic = "C",
     keymap = "<A-c>",
     entries = {
-      { label = "Compile", mnemonic = "C", shortcut = "Alt-F9", desc = "Compile file in current window to object", action = function()
-        require("turbo.compiler").compile_file()
+      { label = "Compile", mnemonic = "C", shortcut = "Alt-F9", desc = "Compile current file & inspect errors", action = function()
+        compiler.compile_file()
       end },
       { label = "Make", mnemonic = "M", shortcut = "F9", desc = "Build project executable via Makefile/compiler", action = function()
-        require("turbo.compiler").make_project()
+        compiler.make_project()
       end },
       { label = "Build all", mnemonic = "B", desc = "Rebuild all source files", action = function()
-        require("turbo.compiler").build_all()
+        compiler.build_all()
+      end },
+      { separator = true },
+      { label = "Buffer Diagnostics", mnemonic = "D", desc = "Show all LSP diagnostics for this buffer in Message pane", action = function()
+        compiler.collect_diagnostics(false)
+      end },
+      { label = "Workspace Diagnostics", mnemonic = "W", desc = "Show all LSP diagnostics across workspace in Message pane", action = function()
+        compiler.collect_diagnostics(true)
+      end },
+      { label = "Next Diagnostic", mnemonic = "N", shortcut = "]d", desc = "Jump to next diagnostic / error", action = function()
+        vim.diagnostic.goto_next()
+      end },
+      { label = "Prev Diagnostic", mnemonic = "P", shortcut = "[d", desc = "Jump to previous diagnostic / error", action = function()
+        vim.diagnostic.goto_prev()
       end },
       { separator = true },
       { label = "Message window", mnemonic = "e", desc = "Toggle compiler message and diagnostic pane", action = function()
-        require("turbo.compiler").toggle_message_win()
+        compiler.toggle_message_win()
       end },
     },
   },
@@ -121,6 +141,9 @@ M.items = {
       { label = "Evaluate expression", mnemonic = "E", desc = "Evaluate variable or expression at cursor", action = function()
         pcall(function() require("dapui").eval() end)
       end },
+      { separator = true },
+      { label = "Type Definition", mnemonic = "y", desc = "Jump to type definition via LSP", action = function() lsp.type_definition() end },
+      { label = "Implementation", mnemonic = "I", desc = "Jump to implementation via LSP", action = function() lsp.implementation() end },
     },
   },
   {
@@ -129,7 +152,7 @@ M.items = {
     keymap = "<A-p>",
     entries = {
       { label = "Directory / Tree", mnemonic = "D", desc = "Open DOS file directory tree", action = function()
-        require("turbo.layout").open_dir_explorer()
+        layout.open_dir_explorer()
       end },
       { label = "Open project...", mnemonic = "O", desc = "Load an existing project workspace", action = function()
         vim.ui.input({ prompt = "Open project dir: ", completion = "dir" }, function(dir)
@@ -147,7 +170,7 @@ M.items = {
     keymap = "<A-o>",
     entries = {
       { label = "Colors / Themes...", mnemonic = "C", desc = "Choose visual theme (Gruvbox, Borland, Monokai, Mocha)", action = function()
-        require("turbo.layout").open_theme_selector()
+        layout.open_theme_selector()
       end },
       { separator = true },
       { label = "Plugins (Lazy)", mnemonic = "P", desc = "Manage and update plugins via lazy.nvim", action = function()
@@ -174,10 +197,10 @@ M.items = {
         vim.cmd("wincmd =")
       end },
       { label = "Message", mnemonic = "M", desc = "Show / Hide compiler message window", action = function()
-        require("turbo.compiler").toggle_message_win()
+        compiler.toggle_message_win()
       end },
       { label = "Zoom", mnemonic = "Z", shortcut = "F5", desc = "Maximize / restore active window", action = function()
-        require("turbo.layout").toggle_zoom()
+        layout.toggle_zoom()
       end },
       { label = "Next", mnemonic = "N", shortcut = "F6", desc = "Switch to next window", action = function()
         vim.cmd("wincmd w")
@@ -195,6 +218,12 @@ M.items = {
       { label = "Help Index", mnemonic = "I", shortcut = "F1", desc = "Open Neovim documentation help index", action = function()
         vim.cmd("help")
       end },
+      { label = "Hover Documentation", mnemonic = "H", shortcut = "K", desc = "Show LSP hover documentation for symbol", action = function()
+        lsp.hover()
+      end },
+      { label = "Signature Help", mnemonic = "S", desc = "Show LSP function parameter hints", action = function()
+        lsp.signature_help()
+      end },
       { label = "Topic search...", mnemonic = "T", desc = "Search help topic", action = function()
         vim.ui.input({ prompt = "Help on: " }, function(h)
           if h and #h > 0 then vim.cmd("help " .. h) end
@@ -202,7 +231,7 @@ M.items = {
       end },
       { separator = true },
       { label = "About Turbo IDE...", mnemonic = "A", desc = "Display Borland / Turbo C++ 3.0 credits & version", action = function()
-        require("turbo.layout").show_about_dialog()
+        layout.show_about_dialog()
       end },
     },
   },
