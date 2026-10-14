@@ -5,6 +5,7 @@ local statusline = require("turbo.ui.statusline")
 local layout = require("turbo.layout")
 local compiler = require("turbo.compiler")
 local menus = require("turbo.menus")
+local keymaps = require("turbo.keymaps")
 
 local M = {}
 
@@ -14,6 +15,9 @@ function M.setup(opts)
 
   -- Initialize Theme
   theme.set_theme(default_theme)
+
+  -- Setup standard core lazy-nvim keymaps (<leader> = <Space>)
+  keymaps.setup()
 
   -- Top Menubar & Statusline
   vim.o.showtabline = 2
@@ -28,7 +32,7 @@ function M.setup(opts)
   -- Enable mouse across all modes
   vim.o.mouse = "a"
 
-  -- Classic Keymaps
+  -- Classic Keymaps Helper
   local map = function(modes, lhs, rhs, desc)
     vim.keymap.set(modes, lhs, rhs, { silent = true, desc = desc })
   end

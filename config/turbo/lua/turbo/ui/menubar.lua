@@ -18,10 +18,10 @@ function M.get_menu_col(idx)
 end
 
 function M.render()
-  local s = "%#TurboMenuBar# "
+  local s = "%#TurboMenuBar#"
 
-  -- System button: ≡
-  s = s .. "%@v:lua.TurboSystemClick@≡%X "
+  -- System button: ≡ (passes 0 to click callback)
+  s = s .. "%0@v:lua.TurboSystemClick@ ≡ %X"
 
   local current_col = 3
   M.menu_coords = {}
@@ -35,7 +35,8 @@ function M.render()
     local letter = title:sub(m_idx, m_idx)
     local post = title:sub(m_idx + 1)
 
-    s = s .. "%@" .. idx .. "@v:lua.TurboMenuTabClick@"
+    -- Valid Neovim click format: %<minwid>@<funcname>@
+    s = s .. "%" .. idx .. "@v:lua.TurboMenuTabClick@"
 
     if state.menu_open and state.active_menu_idx == idx then
       s = s .. "%#TurboMenuActive# " .. pre .. letter .. post .. " %#TurboMenuBar#"
@@ -47,8 +48,14 @@ function M.render()
     current_col = current_col + #title + 2
   end
 
-  -- Right-aligned brand info
-  s = s .. "%#TurboMenuBar#%=" .. "Turbo C++ 3.0 "
+  -- Fill the rest of the tabline with menubar background
+  s = s .. "%#TurboMenuBar#%="
+
+  -- Only show right brand label if screen is wide enough to avoid truncating menus
+  local cols = vim.o.columns or 80
+  if cols >= 100 then
+    s = s .. "Turbo C++ 3.0 "
+  end
 
   return s
 end

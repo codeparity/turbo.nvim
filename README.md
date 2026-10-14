@@ -2,7 +2,7 @@
 
 A retro **Borland / Turbo C++ 3.0** style Text User Interface (TUI) and complete IDE package for Neovim. 
 
-Delivers the iconic 1990s DOS aesthetic (double-line ASCII boxes, drop shadows, top menubar with underlined mnemonics, bottom hotkey bar, and compiler message pane) combined with modern IDE features (LSP diagnostics, Lazy.nvim plugin ecosystem, and Treesitter syntax highlighting).
+Delivers the iconic 1990s DOS aesthetic (double-line ASCII boxes, drop shadows, top menubar with underlined mnemonics, bottom hotkey bar, and compiler message pane) combined with modern IDE features: **Lazy.nvim** plugin ecosystem, **Which-Key.nvim**, **LSP diagnostics**, and **Treesitter syntax highlighting**.
 
 Default theme: **Gruvbox Dark**, with instant switching to **Borland Classic (DOS Blue)**, **Monokai Pro**, and **Catppuccin Mocha**.
 
@@ -11,14 +11,19 @@ Default theme: **Gruvbox Dark**, with instant switching to **Borland Classic (DO
 ## Highlights
 
 - **Embedded & Portable**: Contains an embedded Neovim binary and runtime inside `vendor/nvim/` and `bin/nvim`. Runs out of the box with `./turbo` without requiring or modifying system Neovim configs.
-- **Top Menubar & Underlined Mnemonics**:
-  - `File`, `Edit`, `Search`, `Run`, `Compile`, `Debug`, `Project`, `Options`, `Window`, `Help`.
+- **Clean Top Menubar & Underlined Mnemonics**:
+  - `≡ File Edit Search Run Compile Debug Project Options Window Help`.
   - Mnemonic accelerator characters are distinctively underlined (e.g. `~F~ile`, `~E~dit`).
   - Open any menu directly with **`Alt+<Key>`** (e.g. `Alt+F`, `Alt+E`, `Alt+C`) or **`F10`**.
+  - Mouse click support: click any menu title or `≡` system box.
 - **Authentic Floating Dropdowns with Drop Shadows**:
   - Double-line box-drawing borders (`╔═╗`, `║ ║`, `╚═╝`).
   - True 1990s DOS **drop-shadow** effect behind menus.
   - Arrow key navigation (`Up`/`Down`, `Left`/`Right` to switch menus) or instant trigger by typing the underlined mnemonic key (e.g., `o` for Open, `s` for Save, `x` for Exit).
+- **Standard Lazy-Nvim Core Keymaps (<leader> = Space)**:
+  - Full compatibility with core LazyVim keymaps.
+  - **Which-Key** included out-of-the-box (`<leader>?` or pressing `<leader>`).
+  - Seamless window navigation (`<C-h>`, `<C-j>`, `<C-k>`, `<C-l>`), buffer cycling (`<S-h>`, `<S-l>`), and visual line movement (`J`/`K`).
 - **Borland Window Frames (`winbar`)**:
   - `╔═[■]════ 1 NONAME00.CPP ════[↑]═╗` with window numbering, close button `[■]`, and zoom button `[↑]`.
 - **Bottom Status & Hotkey Bar**:
@@ -57,7 +62,36 @@ Launch the standalone IDE directly:
 
 ---
 
-## Classic Borland Keybindings
+## Keybindings Reference
+
+### 1. Core Lazy-Nvim Keymaps (`<leader>` = `<Space>`)
+
+| Keybinding | Action | Description |
+| :--- | :--- | :--- |
+| **`<Space>`** | Which-Key | Trigger which-key popup menu |
+| **`<leader>l` / `<leader>L`** | Lazy | Open Lazy plugin manager |
+| **`<leader>m` / `<leader>cm`**| Mason | Open Mason package manager |
+| **`<leader>ff`** | Find Files | Open file picker / dialog |
+| **`<leader>fg` / `<leader>/`**| Live Grep | Search across project files |
+| **`<leader>e` / `<leader>fe`**| Explorer | Open directory / file tree |
+| **`<leader>fn`** | New File | Open new buffer |
+| **`<leader>w` / `<leader>fs`**| Save File | Write current buffer |
+| **`<leader>q` / `<leader>wd`**| Close Window | Close current window |
+| **`<leader>wm`** | Zoom Window | Toggle maximize / tile |
+| **`<leader>qq`** | Quit All | Exit IDE |
+| **`<C-h/j/k/l>`** | Navigate | Move focus left / down / up / right |
+| **`<S-h>` / `<S-l>`** | Buffers | Previous / Next buffer |
+| **`[b` / `]b`** | Buffers | Previous / Next buffer |
+| **`J` / `K` (Visual)** | Move Lines | Move selected lines down / up |
+| **`<` / `>` (Visual)** | Indent | Indent lines while retaining selection |
+| **`gd` / `K`** | LSP | Goto definition / Hover documentation |
+| **`<leader>ca`** | Code Action | LSP code actions |
+| **`<leader>cr`** | Rename | LSP rename symbol |
+| **`<leader>xx`** | Diagnostics | Toggle Compiler & Diagnostic Message window |
+
+---
+
+### 2. Classic Borland Keybindings
 
 | Keybinding | Action | Description |
 | :--- | :--- | :--- |

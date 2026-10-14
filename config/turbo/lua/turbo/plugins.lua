@@ -17,6 +17,29 @@ function M.setup()
   if not ok then return end
 
   lazy.setup({
+    -- Which-Key (standard in lazy-nvim)
+    {
+      "folke/which-key.nvim",
+      event = "VeryLazy",
+      opts = {
+        preset = "classic",
+        win = {
+          border = "double",
+        },
+      },
+      config = function(_, opts)
+        local wk = require("which-key")
+        wk.setup(opts)
+        wk.add({
+          { "<leader>f", group = "file/find" },
+          { "<leader>w", group = "windows" },
+          { "<leader>q", group = "quit/session" },
+          { "<leader>c", group = "code/compile" },
+          { "<leader>u", group = "ui/themes" },
+          { "<leader>b", group = "buffer" },
+        })
+      end,
+    },
     -- Core Treesitter for syntax highlighting
     {
       "nvim-treesitter/nvim-treesitter",
@@ -48,7 +71,7 @@ function M.setup()
     },
   }, {
     root = vim.fn.stdpath("data") .. "/lazy",
-    defaults = { lazy = true },
+    defaults = { lazy = false },
     ui = {
       border = "double",
       title = " Turbo C++ Package Manager (Lazy) ",
