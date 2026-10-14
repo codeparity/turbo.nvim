@@ -1,11 +1,13 @@
--- Entrypoint for Turbo IDE (isolated sandboxed Neovim configuration)
+-- Entrypoint for Turbo IDE (standalone sandboxed Neovim launcher)
 
 local current_file = debug.getinfo(1, "S").source:sub(2)
 local config_root = vim.fn.fnamemodify(current_file, ":p:h")
+local project_root = vim.fn.fnamemodify(config_root, ":h:h")
 
--- Add local lua directory to package path
-local lua_dir = config_root .. "/lua"
+-- Add root lua directory to package path
+local lua_dir = project_root .. "/lua"
 package.path = lua_dir .. "/?.lua;" .. lua_dir .. "/?/init.lua;" .. package.path
+vim.opt.rtp:prepend(project_root)
 
 -- Basic Neovim Options
 vim.g.mapleader = " "
@@ -31,41 +33,48 @@ vim.o.mouse = "a"
 vim.o.clipboard = "unnamedplus"
 vim.o.shortmess = "filnxtToOFI"
 
--- Initialize Turbo IDE
+-- Initialize Turbo Nostalgia UI
 local turbo = require("turbo")
 turbo.setup({
-  theme = "gruvbox", -- Default theme: Gruvbox Dark (can switch to 'borland', 'monokai', 'mocha')
+  theme = "gruvbox", -- Default theme: Gruvbox Dark (options: 'borland', 'monokai', 'mocha')
+  enable_tabline = true,
+  enable_statusline = true,
+  enable_winbar = true,
+  enable_keymaps = true,
+  enable_lazy_keys = true,
 })
 
--- Welcome sample buffer if launched with no arguments
+-- Welcome scratchpad buffer if launched with no arguments
 vim.api.nvim_create_autocmd("VimEnter", {
   callback = function()
     if vim.fn.argc() == 0 and vim.fn.line2byte(vim.fn.line("$") + 1) <= 2 then
       local sample = {
         "/*",
-        " *  TURBO C++ 3.0 IDE",
+        " *  TURBO C++ 3.0 NOSTALGIA UI",
         " *  File: NONAME00.CPP",
         " *",
-        " *  Hotkeys:",
+        " *  Nostalgic TUI Features:",
         " *    Alt+F / F10 : File Menu (Alt+E Edit, Alt+S Search, Alt+C Compile, etc.)",
+        " *    <Space>     : Which-Key Menu (Leader: <Space>)",
         " *    F1          : Help Index",
         " *    F2          : Save File",
-        " *    F3          : Open File Dialog",
-        " *    F5          : Zoom / Maximize Window",
-        " *    F6          : Next Window",
+        " *    F3          : Open File Dialog (<Space>ff)",
+        " *    F5          : Zoom / Maximize Window (<Space>wm)",
+        " *    F6          : Next Window (<Space>ww)",
         " *    F9          : Make Project",
         " *    Alt+F9      : Compile Current File",
         " *    Ctrl+F9     : Run Program",
-        " *    Alt+X       : Exit",
+        " *    Alt+X       : Exit (<Space>qq)",
         " *",
-        " *  Themes:",
-        " *    Select 'Options -> Colors' to switch between Gruvbox, Borland DOS Blue, Monokai, Mocha",
+        " *  Plugin Controls:",
+        " *    :TurboToggle  - Turn Nostalgia UI on/off",
+        " *    :TurboTheme   - Switch between Gruvbox, Borland DOS Blue, Monokai, Mocha",
         " */",
         "",
         "#include <stdio.h>",
         "",
         "int main(void) {",
-        '    printf("Hello from Turbo C++ 3.0 in Neovim!\\n");',
+        '    printf("Welcome to Turbo C++ Nostalgia UI for Neovim!\\n");',
         "    return 0;",
         "}",
       }

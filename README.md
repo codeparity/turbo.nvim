@@ -1,97 +1,102 @@
-# Turbo C++ 3.0 / Borland IDE for Neovim (`turbo_nvim`)
+# Turbo.nvim: Nostalgia UI for Neovim
 
-A retro **Borland / Turbo C++ 3.0** style Text User Interface (TUI) and complete IDE package for Neovim. 
+A retro **Borland / Turbo C++ 3.0** style "Nostalgia UI" for Neovim. 
 
-Delivers the iconic 1990s DOS aesthetic (double-line ASCII boxes, drop shadows, top menubar with underlined mnemonics, bottom hotkey bar, and compiler message pane) combined with modern IDE features: **Lazy.nvim** plugin ecosystem, **Which-Key.nvim**, **LSP diagnostics**, and **Treesitter syntax highlighting**.
+Designed both as an **intuitive bridge for beginners learning Vim/Neovim** and a nostalgic treat for developers who love the classic 1990s DOS aesthetic. 
 
-Default theme: **Gruvbox Dark**, with instant switching to **Borland Classic (DOS Blue)**, **Monokai Pro**, and **Catppuccin Mocha**.
-
----
-
-## Highlights
-
-- **Embedded & Portable**: Contains an embedded Neovim binary and runtime inside `vendor/nvim/` and `bin/nvim`. Runs out of the box with `./turbo` without requiring or modifying system Neovim configs.
-- **Clean Top Menubar & Underlined Mnemonics**:
-  - `≡ File Edit Search Run Compile Debug Project Options Window Help`.
-  - Mnemonic accelerator characters are distinctively underlined (e.g. `~F~ile`, `~E~dit`).
-  - Open any menu directly with **`Alt+<Key>`** (e.g. `Alt+F`, `Alt+E`, `Alt+C`) or **`F10`**.
-  - Mouse click support: click any menu title or `≡` system box.
-- **Authentic Floating Dropdowns with Drop Shadows**:
-  - Double-line box-drawing borders (`╔═╗`, `║ ║`, `╚═╝`).
-  - True 1990s DOS **drop-shadow** effect behind menus.
-  - Arrow key navigation (`Up`/`Down`, `Left`/`Right` to switch menus) or instant trigger by typing the underlined mnemonic key (e.g., `o` for Open, `s` for Save, `x` for Exit).
-- **Standard Lazy-Nvim Core Keymaps (<leader> = Space)**:
-  - Full compatibility with core LazyVim keymaps.
-  - **Which-Key** included out-of-the-box (`<leader>?` or pressing `<leader>`).
-  - Seamless window navigation (`<C-h>`, `<C-j>`, `<C-k>`, `<C-l>`), buffer cycling (`<S-h>`, `<S-l>`), and visual line movement (`J`/`K`).
-- **Borland Window Frames (`winbar`)**:
-  - `╔═[■]════ 1 NONAME00.CPP ════[↑]═╗` with window numbering, close button `[■]`, and zoom button `[↑]`.
-- **Bottom Status & Hotkey Bar**:
-  - Shows classic Borland shortcuts: `F1 Help │ F2 Save │ F3 Open │ Alt-F9 Compile │ F9 Make │ F10 Menu`.
-  - Dynamically switches to display item descriptions when browsing menus!
-- **Compiler Message Window**:
-  - Bottom split window (`Window -> Message` or `F9 Make` / `Alt+F9 Compile`).
-  - Displays compilation results and LSP diagnostic errors with `<CR>` jump-to-error.
-- **Theme Presets**:
-  - `Gruvbox Dark` (**Default**)
-  - `Borland Classic` (Iconic `#0000A8` DOS Blue)
-  - `Monokai Pro`
-  - `Catppuccin Mocha`
-  - Switch anytime via `Options -> Colors / Themes...` or `:TurboTheme <name>`.
+Works as:
+1. **A standard Neovim plugin** (`require('turbo').setup()`) that can be added to any existing config or toggled on/off with `:TurboToggle`.
+2. **A zero-dependency standalone IDE** via `./turbo`, packaging an embedded Neovim binary in a sandboxed runtime.
 
 ---
 
-## Quick Start
+## Why Nostalgia UI for Beginners?
 
-Launch the standalone IDE directly:
+Modal editing and command-line interfaces can be intimidating for newcomers to Vim. **Turbo.nvim** solves this by providing:
+- **Always-Visible Top Menubar**: `File`, `Edit`, `Search`, `Run`, `Compile`, `Debug`, `Project`, `Options`, `Window`, `Help`.
+- **Intuitive Accelerators**: Standard `Alt+<Key>` (e.g. `Alt+F`, `Alt+E`) or `F10` opens dropdown menus immediately, just like GUI desktop applications.
+- **Underlined Mnemonics**: Clear visual hints for keys inside every menu (e.g., `o` for Open, `s` for Save, `x` for Exit).
+- **Familiar Function Keys**: `F1` (Help), `F2` (Save), `F3` (Open), `F5` (Zoom Window), `Alt+X` (Exit).
+- **Full Lazy-Nvim & Which-Key Integration**: Uses `<Space>` as leader key; pressing `<Space>` triggers interactive Which-Key menus.
+- **On/Off Toggle**: Press `:TurboToggle` anytime to switch between the retro TUI and your standard Neovim interface!
+
+---
+
+## Installation as a Neovim Plugin
+
+### Using [lazy.nvim](https://github.com/folke/lazy.nvim)
+
+```lua
+{
+  "paw/turbo.nvim",
+  lazy = false,
+  priority = 1000,
+  opts = {
+    theme = "gruvbox",        -- "gruvbox" (default) | "borland" | "monokai" | "mocha"
+    enable_tabline = true,    -- Top nostalgic menubar
+    enable_statusline = true, -- Bottom Borland statusline
+    enable_winbar = true,     -- Double-line ASCII window headers (╔═[■]═ 1 ... ═[↑]═╗)
+    enable_keymaps = true,    -- Alt+<Key> accelerators and F1-F10 keys
+    enable_lazy_keys = true,  -- Standard lazy-nvim keymaps (<leader> = <Space>)
+    enable_mouse = true,      -- Mouse click support on menus and window buttons
+  },
+}
+```
+
+### Plugin Commands
+
+| Command | Description |
+| :--- | :--- |
+| `:TurboToggle` | Turn the Nostalgia UI on/off |
+| `:TurboEnable` | Enable the Nostalgia UI |
+| `:TurboDisable` | Disable the Nostalgia UI & restore original settings |
+| `:TurboTheme <name>` | Switch theme (`gruvbox`, `borland`, `monokai`, `mocha`) |
+| `:TurboAbout` | Display authentic Borland / Turbo C++ About dialog |
+| `:TurboCompile` | Compile current file & display diagnostics in Message pane |
+| `:TurboMake` | Build project via `make` |
+| `:TurboRun` | Run current program |
+
+---
+
+## Using as a Standalone "Zero-Install" App
+
+If you don't have Neovim installed or want a completely isolated sandboxed environment:
 
 ```bash
-# Launch with welcome scratchpad
+# Clone the repository
+git clone https://github.com/paw/turbo_nvim.git
+cd turbo_nvim
+
+# Launch immediately
 ./turbo
 
-# Or open an existing file
+# Or open a specific file
 ./turbo main.cpp
 ```
 
-### Self-Contained Isolation
 `./turbo` runs completely sandboxed:
-- Neovim runtime: `vendor/nvim/usr/share/nvim/runtime`
-- Config directory: `config/turbo`
-- Data / Plugins / State: `.local/share/turbo` and `.local/state/turbo`
-- Never touches or conflicts with your host `~/.config/nvim`.
+- Embedded Neovim runtime: `vendor/nvim/usr/share/nvim/runtime`
+- Isolated config: `config/turbo/`
+- Isolated data & plugins: `.local/share/turbo/`
+- Zero modification to your system `~/.config/nvim`.
 
 ---
 
-## Keybindings Reference
+## Themes
 
-### 1. Core Lazy-Nvim Keymaps (`<leader>` = `<Space>`)
+Turbo.nvim ships with four curated retro & modern palettes:
+- **`gruvbox`** (**Default**): Warm retro DOS feel with Gruvbox Dark tones and yellow/red underlined accelerators.
+- **`borland`**: Iconic 1990s Turbo C++ 3.0 deep blue canvas (`#0000A8`), light gray menubars, and red accelerators.
+- **`monokai`**: Monokai Pro high-contrast aesthetic.
+- **`mocha`**: Catppuccin Mocha modern pastel palette.
 
-| Keybinding | Action | Description |
-| :--- | :--- | :--- |
-| **`<Space>`** | Which-Key | Trigger which-key popup menu |
-| **`<leader>l` / `<leader>L`** | Lazy | Open Lazy plugin manager |
-| **`<leader>m` / `<leader>cm`**| Mason | Open Mason package manager |
-| **`<leader>ff`** | Find Files | Open file picker / dialog |
-| **`<leader>fg` / `<leader>/`**| Live Grep | Search across project files |
-| **`<leader>e` / `<leader>fe`**| Explorer | Open directory / file tree |
-| **`<leader>fn`** | New File | Open new buffer |
-| **`<leader>w` / `<leader>fs`**| Save File | Write current buffer |
-| **`<leader>q` / `<leader>wd`**| Close Window | Close current window |
-| **`<leader>wm`** | Zoom Window | Toggle maximize / tile |
-| **`<leader>qq`** | Quit All | Exit IDE |
-| **`<C-h/j/k/l>`** | Navigate | Move focus left / down / up / right |
-| **`<S-h>` / `<S-l>`** | Buffers | Previous / Next buffer |
-| **`[b` / `]b`** | Buffers | Previous / Next buffer |
-| **`J` / `K` (Visual)** | Move Lines | Move selected lines down / up |
-| **`<` / `>` (Visual)** | Indent | Indent lines while retaining selection |
-| **`gd` / `K`** | LSP | Goto definition / Hover documentation |
-| **`<leader>ca`** | Code Action | LSP code actions |
-| **`<leader>cr`** | Rename | LSP rename symbol |
-| **`<leader>xx`** | Diagnostics | Toggle Compiler & Diagnostic Message window |
+Switch themes dynamically via `Options -> Colors / Themes...` or with `:TurboTheme <name>`.
 
 ---
 
-### 2. Classic Borland Keybindings
+## Keybindings
+
+### 1. Borland Hotkeys & Menu Accelerators
 
 | Keybinding | Action | Description |
 | :--- | :--- | :--- |
@@ -117,9 +122,30 @@ Launch the standalone IDE directly:
 | **`Ctrl+F9`**| Run | Build and execute current program |
 | **`Alt+X`** | Exit | Exit Turbo IDE (`:confirm qall`) |
 
+### 2. Core Lazy-Nvim Keymaps (`<leader>` = `<Space>`)
+
+| Keybinding | Action | Description |
+| :--- | :--- | :--- |
+| **`<Space>`** | Which-Key | Trigger which-key popup menu |
+| **`<leader>l`** | Lazy | Open Lazy plugin manager |
+| **`<leader>m`** | Mason | Open Mason package manager |
+| **`<leader>ff`** | Find Files | Open file picker / dialog |
+| **`<leader>fg`** | Live Grep | Search across project files |
+| **`<leader>e`** | Explorer | Open directory / file tree |
+| **`<leader>w`** | Save File | Write current buffer |
+| **`<leader>q`** | Close Window | Close current window |
+| **`<leader>wm`** | Zoom Window | Toggle maximize / tile |
+| **`<leader>qq`** | Quit All | Exit IDE |
+| **`<C-h/j/k/l>`** | Navigate | Move focus left / down / up / right |
+| **`<S-h>` / `<S-l>`** | Buffers | Previous / Next buffer |
+| **`J` / `K` (Visual)** | Move Lines | Move selected lines down / up |
+| **`<` / `>` (Visual)** | Indent | Indent lines while retaining selection |
+| **`gd` / `K`** | LSP | Goto definition / Hover documentation |
+| **`<leader>xx`** | Diagnostics | Toggle Compiler & Diagnostic Message window |
+
 ---
 
-## Navigation Inside Dropdowns
+## Dropdown Menu Navigation
 
 - **`<Down>` / `j`**: Next menu item (skips separators).
 - **`<Up>` / `k`**: Previous menu item (skips separators).
