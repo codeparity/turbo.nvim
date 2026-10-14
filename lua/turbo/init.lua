@@ -21,14 +21,16 @@ function M.setup(opts)
     enable_statusline = true,     -- Bottom Borland statusline
     enable_winbar = true,         -- Double-line ASCII window headers
     enable_keymaps = true,        -- Alt+<Key> accelerators and F1-F10 keys
-    enable_lazy_keys = true,      -- Core lazy-nvim keymaps (<leader> = <Space>)
-    enable_mouse = true,          -- Mouse clicking on menus & headers
+    enable_lazy_keys = false,     -- Off by default for existing setups so it won't conflict with host leader keys
+    enable_mouse = nil,           -- nil means preserve user's existing vim.opt.mouse
   }, opts)
 
-  -- Initialize Theme
-  theme.set_theme(M.opts.theme)
+  -- Initialize Theme if specified
+  if M.opts.theme then
+    theme.set_theme(M.opts.theme)
+  end
 
-  -- Setup keymaps
+  -- Only setup core lazy keymaps if explicitly requested (e.g. standalone mode)
   if M.opts.enable_lazy_keys then
     keymaps.setup()
   end
@@ -73,11 +75,6 @@ function M.setup(opts)
   vim.api.nvim_create_user_command("TurboRun", function()
     compiler.run_current()
   end, { desc = "Run current program" })
-
-  -- Setup lazy plugins if bootstrapping in standalone mode
-  pcall(function()
-    require("turbo.plugins").setup()
-  end)
 end
 
 function M.enable()
@@ -112,11 +109,11 @@ function M.enable()
     vim.o.winbar = "%!v:lua.require('turbo.layout').render_winbar()"
   end
 
-  if opts.enable_mouse ~= false then
-    vim.o.mouse = "a"
+  if opts.enable_mouse ~= nil then
+    vim.o.mouse = opts.enable_mouse and "a" or ""
   end
 
-  -- Borland Keymaps
+  -- Borland Keymaps (Alt+<Key> and F1-F10)
   if opts.enable_keymaps ~= false then
     local map = function(modes, lhs, rhs, desc)
       vim.keymap.set(modes, lhs, rhs, { silent = true, desc = desc })
