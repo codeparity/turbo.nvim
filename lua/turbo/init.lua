@@ -18,7 +18,7 @@ local target_tabline = "%!v:lua.require('turbo.ui.menubar').render()"
 function M.setup(opts)
   opts = opts or {}
   M.opts = vim.tbl_deep_extend("force", {
-    theme = "gruvbox",            -- "gruvbox" | "borland" | "monokai" | "mocha"
+    theme = nil,                  -- nil = respect user's active colorscheme without imposing themes!
     enable_tabline = true,        -- Top nostalgic menubar (Row 0)
     enable_winbar = true,         -- Buffer tabs below menubar (Row 1)
     enable_statusline = true,     -- Bottom Borland statusline
@@ -27,10 +27,21 @@ function M.setup(opts)
     enable_mouse = nil,           -- nil means preserve user's existing vim.opt.mouse
   }, opts)
 
-  -- Initialize Theme if specified
+  -- Adapt to user's active colorscheme (or apply explicit theme if requested)
   if M.opts.theme then
     theme.set_theme(M.opts.theme)
+  else
+    theme.adapt_user_colorscheme()
   end
+
+  -- Listen for colorscheme changes so Turbo adapts dynamically to whatever colorscheme the user selects
+  vim.api.nvim_create_autocmd("ColorScheme", {
+    callback = function()
+      if not M.opts.theme then
+        theme.adapt_user_colorscheme()
+      end
+    end,
+  })
 
   -- Only setup core lazy keymaps if explicitly requested (e.g. standalone mode)
   if M.opts.enable_lazy_keys then
@@ -53,13 +64,21 @@ function M.setup(opts)
   end, { desc = "Disable Turbo Nostalgia UI" })
 
   vim.api.nvim_create_user_command("TurboTheme", function(args)
-    theme.set_theme(args.args)
+    if args.args == "auto" or args.args == "default" or #args.args == 0 then
+      M.opts.theme = nil
+      theme.adapt_user_colorscheme()
+      vim.notify("Turbo UI adapted to active colorscheme", vim.log.levels.INFO)
+    else
+      theme.set_theme(args.args)
+    end
   end, {
-    nargs = 1,
+    nargs = "?",
     complete = function()
-      return vim.tbl_keys(theme.themes)
+      local list = vim.tbl_keys(theme.themes)
+      table.insert(list, "auto")
+      return list
     end,
-    desc = "Switch Turbo UI theme",
+    desc = "Switch Turbo UI theme or adapt to colorscheme (auto)",
   })
 
   vim.api.nvim_create_user_command("TurboAbout", function()
