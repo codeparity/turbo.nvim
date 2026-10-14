@@ -19,8 +19,8 @@ M.themes = {
     constant = "#d3869b",
     special = "#fe8019",
     menubar_bg = "#3c3836",
-    menubar_fg = "#ebdbb2",
-    menubar_mnemonic = "#fabd2f",
+    menubar_fg = "#83a598",        -- Secondary accent cyan/blue for high-contrast readability
+    menubar_mnemonic = "#fabd2f",  -- Bright yellow accelerator
     menubar_active_bg = "#504945",
     menubar_active_fg = "#fbf1c7",
     dropdown_bg = "#3c3836",
@@ -93,8 +93,8 @@ M.themes = {
     constant = "#AE81FF",
     special = "#FD971F",
     menubar_bg = "#3E3D32",
-    menubar_fg = "#F8F8F2",
-    menubar_mnemonic = "#F92672",
+    menubar_fg = "#66D9EF",        -- Secondary cyan
+    menubar_mnemonic = "#F92672",  -- Magenta accelerator
     menubar_active_bg = "#F92672",
     menubar_active_fg = "#272822",
     dropdown_bg = "#3E3D32",
@@ -130,8 +130,8 @@ M.themes = {
     constant = "#FAB387",
     special = "#F38BA8",
     menubar_bg = "#313244",
-    menubar_fg = "#CDD6F4",
-    menubar_mnemonic = "#F38BA8",
+    menubar_fg = "#89B4FA",        -- Secondary blue
+    menubar_mnemonic = "#F38BA8",  -- Red/pink accelerator
     menubar_active_bg = "#89B4FA",
     menubar_active_fg = "#1E1E2E",
     dropdown_bg = "#313244",
@@ -157,25 +157,31 @@ M.themes = {
 function M.adapt_user_colorscheme()
   local tabline = vim.api.nvim_get_hl(0, { name = "TabLine", link = false })
   local tabline_sel = vim.api.nvim_get_hl(0, { name = "TabLineSel", link = false })
+  local normal = vim.api.nvim_get_hl(0, { name = "Normal", link = false })
   local normal_float = vim.api.nvim_get_hl(0, { name = "NormalFloat", link = false })
-  local float_border = vim.api.nvim_get_hl(0, { name = "FloatBorder", link = false })
-  local pmenu_sel = vim.api.nvim_get_hl(0, { name = "PmenuSel", link = false })
+  local identifier = vim.api.nvim_get_hl(0, { name = "Identifier", link = false })
   local special = vim.api.nvim_get_hl(0, { name = "Special", link = false })
   local warn = vim.api.nvim_get_hl(0, { name = "DiagnosticWarn", link = false })
+  local visual = vim.api.nvim_get_hl(0, { name = "Visual", link = false })
 
+  -- Use subtle background for menubar bar
   local menubar_bg = tabline.bg or normal_float.bg or 0x3c3836
-  local menubar_fg = tabline.fg or normal_float.fg or 0xebdbb2
+
+  -- Use secondary foreground/accent color so text is prominent and not dim/background-like
+  local menubar_fg = identifier.fg or normal.fg or 0xebdbb2
+
+  -- Bright accelerator/mnemonic color with underline
   local mnemonic_fg = warn.fg or special.fg or 0xfabd2f
 
   local highlights = {
     TurboMenuBar = { fg = menubar_fg, bg = menubar_bg },
     TurboMenuMnemonic = { fg = mnemonic_fg, bg = menubar_bg, bold = true, underline = true },
-    TurboMenuActive = { fg = tabline_sel.fg or 0xffffff, bg = tabline_sel.bg or 0x504945, bold = true },
+    TurboMenuActive = { fg = tabline_sel.fg or 0xffffff, bg = visual.bg or tabline_sel.bg or 0x504945, bold = true },
 
     TurboMenuDropdown = { link = "NormalFloat" },
     TurboMenuBorder = { link = "FloatBorder" },
     TurboMenuDropMnemonic = { fg = mnemonic_fg, bg = normal_float.bg, bold = true, underline = true },
-    TurboMenuShortcut = { fg = special.fg, bg = normal_float.bg },
+    TurboMenuShortcut = { fg = special.fg or mnemonic_fg, bg = normal_float.bg },
     TurboMenuSelect = { link = "PmenuSel" },
     TurboMenuSelectMnemonic = { link = "PmenuSel", bold = true, underline = true },
     TurboMenuSeparator = { link = "FloatBorder" },

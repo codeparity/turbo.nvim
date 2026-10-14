@@ -113,55 +113,59 @@ function M.enable()
 
   local opts = M.opts or {}
 
+  -- Function to strictly enforce menubar visibility regardless of Snacks or bufferline toggles
+  local function enforce_menubar()
+    if M.enabled and (M.opts.enable_tabline ~= false) then
+      if vim.o.showtabline ~= 2 then
+        vim.o.showtabline = 2
+      end
+      if vim.o.tabline ~= target_tabline then
+        vim.o.tabline = target_tabline
+      end
+    end
+  end
+
   -- Top Menubar (Row 0)
   if opts.enable_tabline ~= false then
-    vim.o.showtabline = 2
-    vim.o.tabline = target_tabline
+    enforce_menubar()
 
-    -- Guard tabline so plugins loading on VeryLazy (e.g. bufferline) do not stomp over Row 0
     local group = vim.api.nvim_create_augroup("TurboTablineGuard", { clear = true })
-    vim.api.nvim_create_autocmd({ "VimEnter", "UIEnter", "BufEnter", "TabEnter" }, {
+    vim.api.nvim_create_autocmd({
+      "VimEnter",
+      "UIEnter",
+      "BufEnter",
+      "BufWinEnter",
+      "WinEnter",
+      "TabEnter",
+      "BufReadPost",
+      "BufNewFile",
+    }, {
       group = group,
       callback = function()
-        if M.enabled and (M.opts.enable_tabline ~= false) then
-          if vim.o.tabline ~= target_tabline then
-            vim.o.showtabline = 2
-            vim.o.tabline = target_tabline
-          end
-        end
+        enforce_menubar()
       end,
     })
 
     vim.api.nvim_create_autocmd("User", {
-      pattern = "VeryLazy",
+      pattern = { "VeryLazy", "SnacksDashboardOpened", "SnacksDashboardClosed" },
       group = group,
       callback = function()
-        if M.enabled and (M.opts.enable_tabline ~= false) then
-          vim.schedule(function()
-            if M.enabled and (M.opts.enable_tabline ~= false) then
-              vim.o.showtabline = 2
-              vim.o.tabline = target_tabline
-              vim.cmd("redrawtabline")
-            end
-          end)
-        end
+        vim.schedule(function()
+          enforce_menubar()
+          vim.cmd("redrawtabline")
+        end)
       end,
     })
 
     vim.api.nvim_create_autocmd("OptionSet", {
-      pattern = "tabline",
+      pattern = { "tabline", "showtabline" },
       group = group,
       callback = function()
         if M.enabled and (M.opts.enable_tabline ~= false) then
-          if vim.v.option_new ~= target_tabline then
-            vim.schedule(function()
-              if M.enabled and (M.opts.enable_tabline ~= false) then
-                vim.o.showtabline = 2
-                vim.o.tabline = target_tabline
-                vim.cmd("redrawtabline")
-              end
-            end)
-          end
+          vim.schedule(function()
+            enforce_menubar()
+            vim.cmd("redrawtabline")
+          end)
         end
       end,
     })
