@@ -36,7 +36,6 @@ vim.o.shortmess = "filnxtToOFI"
 -- Initialize Turbo Nostalgia UI
 local turbo = require("turbo")
 turbo.setup({
-  theme = "gruvbox", -- Default theme: Gruvbox Dark (options: 'borland', 'monokai', 'mocha')
   enable_tabline = true,
   enable_statusline = true,
   enable_winbar = true,
@@ -68,7 +67,6 @@ vim.api.nvim_create_autocmd("VimEnter", {
         " *",
         " *  Plugin Controls:",
         " *    :TurboToggle  - Turn Nostalgia UI on/off",
-        " *    :TurboTheme   - Switch between Gruvbox, Classic DOS Blue, Monokai, Mocha",
         " */",
         "",
         "#include <stdio.h>",

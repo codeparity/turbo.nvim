@@ -169,10 +169,6 @@ M.items = {
     mnemonic = "O",
     keymap = "<A-o>",
     entries = {
-      { label = "Colors / Themes...", mnemonic = "C", desc = "Choose visual theme (Gruvbox, Borland, Monokai, Mocha)", action = function()
-        layout.open_theme_selector()
-      end },
-      { separator = true },
       { label = "Plugins (Lazy)", mnemonic = "P", desc = "Manage and update plugins via lazy.nvim", action = function()
         pcall(vim.cmd, "Lazy")
       end },

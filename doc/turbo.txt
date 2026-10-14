@@ -48,7 +48,6 @@ Using lazy.nvim: >lua
       lazy = false,
       priority = 1000,
       opts = {
-        theme = "auto",           -- "auto" (respect active theme) | "gruvbox" | "borland" | "monokai" | "mocha"
         enable_tabline = true,    -- Top Turbo menubar
         enable_statusline = true, -- Bottom statusline (auto-disabled if lualine loaded)
         enable_winbar = true,     -- Retro double-line box frame winbar
@@ -64,8 +63,6 @@ Using lazy.nvim: >lua
 Call `require("turbo").setup(opts)` with any of the following options:
 
                                                         *turbo-config-options*
-`theme`             (string)  Theme to use: "auto", "gruvbox", "borland",
-                              "monokai", or "mocha". Default: "auto"
 `enable_tabline`    (boolean) Render top Turbo menubar. Default: true
 `enable_statusline` (boolean) Render bottom statusline. Default: true
 `enable_winbar`     (boolean) Render retro double box winbar. Default: true
@@ -85,11 +82,8 @@ Call `require("turbo").setup(opts)` with any of the following options:
 :TurboDisable                                                    *:TurboDisable*
     Disable the Nostalgia UI and restore previous Neovim options.
 
-:TurboTheme {name}                                                *:TurboTheme*
-    Switch active theme ("auto", "gruvbox", "borland", "monokai", "mocha").
-
 :TurboAbout                                                       *:TurboAbout*
-    Display the authentic Borland / Turbo C++ About dialog.
+    Display the authentic About dialog.
 
 :TurboCompile                                                   *:TurboCompile*
     Compile current file and show diagnostics in the bottom Message window.
@@ -155,14 +149,18 @@ client (e.g., clangd, pyright, rust-analyzer, gopls, vtsls, tsserver):
   Message split window; pressing <CR> on any error jumps directly to that line.
 
 ==============================================================================
-9. THEMES                                                         *turbo-themes*
+9. COLORSCHEME INTEGRATION                                        *turbo-colors*
 
-- `auto`    : Intelligently adapts to your active Neovim colorscheme without
-              overriding syntax or background colors.
-- `gruvbox` : Warm retro DOS aesthetic with Gruvbox dark tones.
-- `borland` : Authentic 1990s Turbo C++ 3.0 deep DOS blue canvas (#0000A8).
-- `monokai` : Monokai Pro high-contrast palette.
-- `mocha`   : Catppuccin Mocha pastel palette.
+turbo.nvim automatically and dynamically adapts all UI highlights directly from
+your active Neovim colorscheme (e.g. Tokyonight, Gruvbox, Catppuccin, Nord):
+
+- Menubar background adopts your active TabLine or NormalFloat tone.
+- Menubar text uses a prominent secondary accent color (Identifier.fg) for
+  high contrast and effortless readability.
+- Accelerators/mnemonics highlight with DiagnosticWarn.fg and underline.
+- Floating dropdowns and window frames inherit your FloatBorder and Title styles.
+- Whenever you switch colorschemes via `:colorscheme <name>`, turbo.nvim
+  instantly recalibrates without requiring a restart.
 
 ==============================================================================
 10. STANDALONE LAUNCHER                                       *turbo-standalone*

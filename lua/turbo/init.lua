@@ -27,19 +27,13 @@ function M.setup(opts)
     enable_mouse = nil,           -- nil means preserve user's existing vim.opt.mouse
   }, opts)
 
-  -- Adapt to user's active colorscheme (or apply explicit theme if requested)
-  if M.opts.theme then
-    theme.set_theme(M.opts.theme)
-  else
-    theme.adapt_user_colorscheme()
-  end
+  -- Always adapt to user's active colorscheme dynamically
+  theme.setup()
 
-  -- Listen for colorscheme changes so Turbo adapts dynamically to whatever colorscheme the user selects
+  -- Listen for colorscheme changes so Turbo UI adapts dynamically to any colorscheme switch
   vim.api.nvim_create_autocmd("ColorScheme", {
     callback = function()
-      if not M.opts.theme then
-        theme.adapt_user_colorscheme()
-      end
+      theme.adapt_user_colorscheme()
     end,
   })
 
@@ -62,24 +56,6 @@ function M.setup(opts)
   vim.api.nvim_create_user_command("TurboDisable", function()
     M.disable()
   end, { desc = "Disable Turbo Nostalgia UI" })
-
-  vim.api.nvim_create_user_command("TurboTheme", function(args)
-    if args.args == "auto" or args.args == "default" or #args.args == 0 then
-      M.opts.theme = nil
-      theme.adapt_user_colorscheme()
-      vim.notify("Turbo UI adapted to active colorscheme", vim.log.levels.INFO)
-    else
-      theme.set_theme(args.args)
-    end
-  end, {
-    nargs = "?",
-    complete = function()
-      local list = vim.tbl_keys(theme.themes)
-      table.insert(list, "auto")
-      return list
-    end,
-    desc = "Switch Turbo UI theme or adapt to colorscheme (auto)",
-  })
 
   vim.api.nvim_create_user_command("TurboAbout", function()
     layout.show_about_dialog()

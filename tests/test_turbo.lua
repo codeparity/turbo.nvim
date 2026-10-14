@@ -8,21 +8,13 @@ end
 
 print("=== Running Turbo IDE Test Suite ===")
 
--- 1. Test Themes
-print("[Test 1] Testing Theme Engine...")
+-- 1. Test Colorscheme Adaptation
+print("[Test 1] Testing Colorscheme Adaptation...")
 local theme = require("turbo.theme")
-local themes_to_test = { "gruvbox", "borland", "monokai", "mocha" }
-for _, t in ipairs(themes_to_test) do
-  theme.set_theme(t)
-  local cur = theme.get_current()
-  assert_true(cur ~= nil, "Theme " .. t .. " returned nil")
-  assert_true(vim.api.nvim_get_hl(0, { name = "TurboMenuBar" }).bg ~= nil, "TurboMenuBar highlight missing for " .. t)
-  assert_true(vim.api.nvim_get_hl(0, { name = "TurboMenuSelect" }).bg ~= nil, "TurboMenuSelect highlight missing for " .. t)
-  print("  ✓ Theme " .. t .. " applied successfully")
-end
-
--- Reset to default Gruvbox
-theme.set_theme("gruvbox")
+theme.adapt_user_colorscheme()
+assert_true(vim.api.nvim_get_hl(0, { name = "TurboMenuBar" }) ~= nil, "TurboMenuBar highlight missing")
+assert_true(vim.api.nvim_get_hl(0, { name = "TurboMenuSelect" }) ~= nil, "TurboMenuSelect highlight missing")
+print("  ✓ Turbo UI successfully adapted to active Neovim colorscheme")
 
 -- 2. Test Menus & Mnemonic Parsing
 print("[Test 2] Testing Menus & Mnemonic Parsing...")

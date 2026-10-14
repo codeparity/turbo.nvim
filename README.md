@@ -30,7 +30,7 @@
 - 🌲 **Modern File Browser Integration**: `File -> Open...` (`F3`) opens **Neo-tree** (with automatic fallback to `NERDTree`, `Snacks`, or `Telescope`).
 - 🛠️ **Universal LSP Support**: Toolbar functions (`Format`, `Code Action`, `Definition`, `References`, `Symbols`) adapt automatically to any active Language Server (`clangd`, `pyright`, `rust-analyzer`, `vtsls`, `gopls`, etc.).
 - 📟 **Retro Message Window**: `:TurboCompile` / `Alt+F9` collects LSP diagnostics into a retro DOS split window. Press `<CR>` on any error to jump directly to code.
-- 🎨 **Adaptive Color Engine**: Respects your existing colorscheme without imposing background colors, or switch to iconic DOS Blue (`:TurboTheme borland`), Gruvbox, Monokai, or Mocha.
+- 🎨 **Seamless Colorscheme Integration**: Automatically derives UI highlights from your active Neovim colorscheme (Gruvbox, Tokyonight, Catppuccin, Nord, etc.) without overriding background or syntax colors.
 - 🔄 **Non-Destructive On/Off Toggle**: Press `:TurboToggle` anytime to seamlessly switch between the retro TUI and your regular Neovim interface.
 - 📦 **Standalone Launcher**: Includes `./turbo` to launch an isolated, sandboxed environment without altering your system config.
 
@@ -46,7 +46,6 @@
   lazy = false,
   priority = 1000,
   opts = {
-    theme = "auto",           -- "auto" (respects your colorscheme) | "gruvbox" | "borland" | "monokai" | "mocha"
     enable_tabline = true,    -- Top Turbo menubar
     enable_statusline = true, -- Bottom Borland statusline (auto-disabled if lualine is active)
     enable_winbar = true,     -- Double-line ASCII window headers (╔═[■]═ 1 ... ═[↑]═╗)
@@ -140,23 +139,19 @@ cd turbo.nvim
 | `:TurboToggle` | Toggle Nostalgia UI on/off |
 | `:TurboEnable` | Enable Nostalgia UI |
 | `:TurboDisable` | Disable Nostalgia UI and restore previous settings |
-| `:TurboTheme <name>` | Switch theme (`auto`, `gruvbox`, `borland`, `monokai`, `mocha`) |
-| `:TurboAbout` | Display authentic Borland / Turbo C++ About dialog |
+| `:TurboAbout` | Display authentic About dialog |
 | `:TurboCompile` | Collect LSP diagnostics into the retro Message pane |
 | `:TurboMake` | Build project via `make` |
 | `:TurboRun` | Run current program |
 
 ---
 
-## 🎨 Themes
+## 🎨 Colorscheme Integration
 
-- **`auto`** (**Default**): Dynamically derives UI highlights from your active colorscheme (Gruvbox, Tokyonight, Catppuccin, Nord, etc.) without imposing background colors.
-- **`borland`**: Authentic 1990s Turbo C++ 3.0 deep DOS blue canvas (`#0000A8`), light gray menubar, and red accelerators.
-- **`gruvbox`**: Warm retro DOS aesthetic with Gruvbox dark tones.
-- **`monokai`**: Monokai Pro high-contrast aesthetic.
-- **`mocha`**: Catppuccin Mocha pastel palette.
-
-Switch themes anytime via `Options -> Colors / Themes...` or `:TurboTheme <name>`.
+Turbo.nvim respects your colorscheme without imposing alien background tones:
+- **Zero Imposition**: Adapts to whichever colorscheme you have active (Gruvbox, Tokyonight, Catppuccin, Nord, etc.).
+- **High-Contrast Readability**: Menubar text uses secondary foreground highlights (`Identifier.fg`) and hotkey mnemonics use `DiagnosticWarn.fg` with underlines for sharp, clear contrast.
+- **Dynamic Reactivity**: Automatically updates whenever you run `:colorscheme <name>`.
 
 ---
 
