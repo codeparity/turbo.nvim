@@ -1,4 +1,13 @@
+# Build and binary artifacts
+bin/
+vendor/
+
+# Local cache & data
 .local/
 .cache/
+lazy-lock.json
+
+# Vim swap & backup files
 *.swp
 *.swo
+*~
